@@ -1,0 +1,51 @@
+name: notebooks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install nbformat
+      - name: Validate notebooks and check Python syntax
+        shell: python
+        run: |
+          import ast, glob, re, sys
+          import nbformat
+
+          # IPython-only syntax: magics, shell escapes, help, and bare `pip install` (IPython automagic)
+          IPYTHON_LINE = re.compile(r"^\s*([!%?]|\w+\?$|(pip|conda)\s+install\b)")
+          errors, checked = [], 0
+
+          def check_source(src, where):
+              # strip IPython magics / shell escapes, which are not plain Python
+              lines = ["pass" if IPYTHON_LINE.match(l) else l for l in src.splitlines()]
+              try:
+                  ast.parse("\n".join(lines))
+              except SyntaxError as e:
+                  errors.append(f"{where}: line {e.lineno}: {e.msg}")
+
+          for path in sorted(glob.glob("**/*.ipynb", recursive=True)):
+              nb = nbformat.read(path, as_version=4)
+              nbformat.validate(nb)
+              for i, cell in enumerate(nb.cells):
+                  if cell.cell_type == "code":
+                      check_source(cell.source, f"{path} [cell {i}]")
+              checked += 1
+              print(f"ok  {path} ({len(nb.cells)} cells)")
+
+          for path in sorted(glob.glob("**/*.py", recursive=True)):
+              check_source(open(path, encoding="utf-8").read(), path)
+              checked += 1
+              print(f"ok  {path}")
+
+          if errors:
+              print("\n".join(errors)); sys.exit(1)
+          print(f"{checked} files checked")
