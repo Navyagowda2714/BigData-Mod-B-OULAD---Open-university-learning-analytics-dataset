@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 
 from pathlib import Path
+import os
 import io
 import sys
 import matplotlib.pyplot as plt
@@ -39,16 +40,18 @@ from sklearn.metrics import silhouette_score
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 # Load the dataset
+# Download the OULAD CSVs (see README) into ./data, or set OULAD_DATA_DIR.
+DATA_DIR = Path(os.getenv("OULAD_DATA_DIR", Path(__file__).parent / "data"))
 
 @st.cache_data
 def load_data():
-    courses = pd.read_csv('C:/Users/kk928/Downloads/archive/courses.csv')
-    assessments = pd.read_csv('C:/Users/kk928/Downloads/archive/assessments.csv')
-    student_assessments = pd.read_csv('C:/Users/kk928/Downloads/archive/studentAssessment.csv')
-    student_info = pd.read_csv('C:/Users/kk928/Downloads/archive/studentInfo.csv')
-    student_registration = pd.read_csv('C:/Users/kk928/Downloads/archive/studentRegistration.csv')
-    student_vle = pd.read_csv('C:/Users/kk928/Downloads/archive/studentVle.csv')
-    vle = pd.read_csv('C:/Users/kk928/Downloads/archive/vle.csv')
+    courses = pd.read_csv(DATA_DIR / 'courses.csv')
+    assessments = pd.read_csv(DATA_DIR / 'assessments.csv')
+    student_assessments = pd.read_csv(DATA_DIR / 'studentAssessment.csv')
+    student_info = pd.read_csv(DATA_DIR / 'studentInfo.csv')
+    student_registration = pd.read_csv(DATA_DIR / 'studentRegistration.csv')
+    student_vle = pd.read_csv(DATA_DIR / 'studentVle.csv')
+    vle = pd.read_csv(DATA_DIR / 'vle.csv')
     return courses, assessments, student_assessments, student_info, student_registration, student_vle, vle
 
 # Load data
